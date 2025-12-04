@@ -1,0 +1,93 @@
+body {
+  background: #111;
+  color: #e5e5e5;
+  text-align: center;
+  font-family: "Press Start 2P", monospace, Arial;
+}
+
+#game {
+  width: min(90vmin, 700px);
+  height: min(90vmin, 700px);
+  margin: 20px auto;
+  display: grid;
+  grid-template-columns: repeat(20, 1fr);
+  grid-template-rows: repeat(20, 1fr);
+  background: #000;
+  border: 4px solid #33ff33;
+  image-rendering: pixelated;
+}
+
+
+#hud {
+  width: 420px;
+  margin: 6px auto;
+  color: #33ff33;
+  font-size: 12px;
+  font-family: "Press Start 2P", monospace;
+  display: flex;
+  justify-content: space-between;
+}
+
+#hudState { font-weight: 700; color: #55ff55; }
+
+.cell {
+  width: 100%;
+  height: 100%;
+}
+
+/* --- PIXEL SNAKE BODY --- */
+.worm {
+  background: #3aff3a;
+  border: 2px solid #1b7d1b;
+  border-radius: 0;              /* no rounding – pixel blocks */
+  box-shadow: none;
+}
+
+/* --- PIXEL SNAKE HEAD (SLIGHT DIFFERENT TONE) --- */
+.head {
+  background: #55ff55;
+  border: 2px solid #1b7d1b;
+  border-radius: 0;
+  position: relative;
+}
+
+/* Pixel eyes */
+.head::before,
+.head::after {
+  content: '';
+  position: absolute;
+  width: 25%;
+  height: 25%;
+  background: #000;
+  top: 20%;
+}
+
+.head::before { left: 18%; }
+.head::after  { right: 18%; }
+
+/* Rotate head via classes (pixel style = no smoothing) */
+.head-up    { transform: rotate(0deg); }
+.head-right { transform: rotate(90deg); }
+.head-down  { transform: rotate(180deg); }
+.head-left  { transform: rotate(270deg); }
+
+/* --- PIXEL WALLS --- */
+.wall {
+  background: #444;
+  border: 2px solid #222;
+  border-radius: 0;
+}
+
+/* --- PIXEL APPLE --- */
+.apple {
+  background: #ff2b2b;
+  border: 2px solid #8b0000;
+  border-radius: 0;
+}
+
+/* --- PIXEL EXIT --- */
+.exit {
+  background: #ffe600;
+  border: 2px solid #b19300;
+  border-radius: 0;
+}
