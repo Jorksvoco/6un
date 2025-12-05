@@ -12,9 +12,10 @@ body {
   display: grid;
   grid-template-columns: repeat(20, 1fr);
   grid-template-rows: repeat(20, 1fr);
-  background: #000;
+  background: #0c82c7;
   border: 4px solid #33ff33;
   image-rendering: pixelated;
+  position: relative;
 }
 
 
@@ -80,8 +81,10 @@ body {
 
 /* --- PIXEL APPLE --- */
 .apple {
-  background: #ff2b2b;
-  border: 2px solid #8b0000;
+  background-image: url('assets/apple.png');
+  background-size: cover;
+  background-position: center;
+  border: none;
   border-radius: 0;
 }
 
@@ -91,3 +94,37 @@ body {
   border: 2px solid #b19300;
   border-radius: 0;
 }
+
+/* Smooth snake overlay (absolute, animated segments) */
+.snakeLayer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.segment {
+  position: absolute;
+  width: calc(100% / 20);
+  height: calc(100% / 20);
+  background: #3aff3a;
+  border: 2px solid #1b7d1b;
+  border-radius: 10%;
+  box-sizing: border-box;
+  transition: left 140ms linear, top 140ms linear, transform 140ms linear;
+}
+
+.segment.head {
+  background: #55ff55;
+}
+
+.segment.head::before,
+.segment.head::after {
+  content: '';
+  position: absolute;
+  width: 18%;
+  height: 18%;
+  background: #000;
+  top: 22%;
+}
+.segment.head::before { left: 16%; }
+.segment.head::after  { right: 16%; }

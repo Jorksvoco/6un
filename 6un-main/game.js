@@ -17,18 +17,18 @@ for (let i = 0; i < size * size; i++) {
 const levels = [
   [
     "####################",
-    "#.................E#",
-    "#..................#",
-    "#.......####.......#",
+    "#.....##..........E#",
+    "#........#...##..###",
+    "####....####.......#",
     "#....W........A....#",
     "####################"
   ],
   [
     "####################",
-    "#...A..............#",
-    "#.......#######....#",
-    "#..W...............#",
-    "#...............E..#",
+    "#...A...........####",
+    "#.......##.####....#",
+    "#..W###............#",
+    "#........####...E..#",
     "####################"
   ],
 
@@ -36,42 +36,42 @@ const levels = [
 
   [
     "####################",
-    "#..............A..E#",
-    "#..........###.....#",
-    "#.......W..........#",
-    "#..................#",
+    "#W..#..........A..E#",
+    "#...#...##.###.....#",
+    "#..####.......##...#",
+    "#..........##.....##",
     "####################"
   ],
   [
     "####################",
     "#..............#####",
-    "#..A...............#",
+    "#..A......###......#",
     "#..#####...........#",
-    "#W..............E..#",
+    "#W.........####.E..#",
     "####################"
   ],
   [
     "####################",
     "#W.................#",
-    "######.#############",
+    "#.#.##.###.###.###.#",
     "#A...............E.#",
     "####################",
     "####################"
   ],
   [
     "####################",
-    "#.......A..........#",
-    "#.......#####......#",
+    "#.###...A..........#",
+    "#.......#####..###.#",
     "#W.................#",
-    "#..............E...#",
+    "#...########...E...#",
     "####################"
   ],
   [
     "####################",
-    "#..........A.......#",
-    "#..######..........#",
-    "#W.......#########.#",
-    "#...............E..#",
+    "#..........A...#####",
+    "#.##..###..........#",
+    "#W.......####..###.#",
+    "#...##..........E..#",
     "####################"
   ]
 ];
@@ -79,15 +79,100 @@ const levels = [
 
 let currentLevel = 0;
 
-let worm = [
-   { pos: 10, dir: 1 }, // tail
-  { pos: 11, dir: 1 }, // middle
-  { pos: 12, dir: 1 }  // head
-];
+let worm = [];
+let snakeLayer = null;
+let segmentElems = [];
+const INITIAL_SEGMENTS = 3;
 let apple = null;
 let exitTile = null;
 let lastDirection = 1; // default facing right (1, -1, size, -size)
 let gravityEnabled = true;
+
+// Create a 3-segment worm around the map 'W' position. Prefer placing to the left
+// of the marker; if not possible, place to the right. Returns an array of indices.
+function createInitialWorm(headIndex) {
+  const row = Math.floor(headIndex / size);
+  const col = headIndex % size;
+
+  const tryPlace = (startCol, step) => {
+    const arr = [];
+    for (let k = 0; k < INITIAL_SEGMENTS; k++) {
+      const c = startCol + k * step;
+      if (c < 0 || c >= size) return null;
+      const idx = row * size + c;
+      if (cells[idx] && cells[idx].classList.contains('wall')) return null;
+      arr.push(idx);
+    }
+    return arr;
+  };
+
+  // Prefer left side so head is at the rightmost index
+  if (col >= INITIAL_SEGMENTS - 1) {
+    const place = tryPlace(col - (INITIAL_SEGMENTS - 1), 1);
+    if (place) return place;
+  }
+
+  // Otherwise try placing starting at the head col
+  if (col <= size - INITIAL_SEGMENTS) {
+    const place = tryPlace(col, 1);
+    if (place) return place;
+  }
+
+  // Fallback: fill around the head (clamped)
+  const fallback = [];
+  for (let k = INITIAL_SEGMENTS - 1; k >= 0; k--) {
+    const c = Math.max(0, Math.min(size - 1, col - k));
+    fallback.push(row * size + c);
+  }
+  return fallback;
+}
+
+function ensureSnakeLayer() {
+  if (!snakeLayer) {
+    snakeLayer = document.createElement('div');
+    snakeLayer.className = 'snakeLayer';
+    game.appendChild(snakeLayer);
+  }
+}
+
+function ensureSegments() {
+  ensureSnakeLayer();
+  while (segmentElems.length < worm.length) {
+    const s = document.createElement('div');
+    s.className = 'segment';
+    snakeLayer.appendChild(s);
+    segmentElems.push(s);
+  }
+  while (segmentElems.length > worm.length) {
+    const s = segmentElems.pop();
+    if (s && s.parentNode) s.parentNode.removeChild(s);
+  }
+}
+
+function updateSegments() {
+  ensureSegments();
+  for (let i = 0; i < worm.length; i++) {
+    const idx = worm[i];
+    const row = Math.floor(idx / size);
+    const col = idx % size;
+    const el = segmentElems[i];
+    if (!el) continue;
+    el.style.left = (col * 100 / size) + '%';
+    el.style.top = (row * 100 / size) + '%';
+    el.classList.toggle('head', i === worm.length - 1);
+    if (i === worm.length - 1) {
+      const d = lastDirection;
+      let rot = 0;
+      if (d === -size) rot = 0;
+      if (d === 1) rot = 90;
+      if (d === size) rot = 180;
+      if (d === -1) rot = 270;
+      el.style.transform = `rotate(${rot}deg)`;
+    } else {
+      el.style.transform = '';
+    }
+  }
+}
 
 /* ------------------------------------
    LOAD LEVEL
@@ -111,7 +196,7 @@ function loadLevel(n) {
       if (char === "#") cells[index].classList.add("wall");
 
       if (char === "W") {
-        worm.push(index);
+        worm = createInitialWorm(index);
       }
 
       if (char === "A") {
@@ -244,17 +329,6 @@ function draw() {
       cell.className = "cell";
     }
   });
-
-  // Draw worm body
-  worm.forEach(i => cells[i].classList.add("worm"));
-
-  // Draw worm head
-  const head = worm[worm.length - 1];
-  cells[head].classList.add("head");
-
-  // head orientation classes
-  if (lastDirection === -size) cells[head].classList.add('head-up');
-  if (lastDirection === size)  cells[head].classList.add('head-down');
-  if (lastDirection === 1)     cells[head].classList.add('head-right');
-  if (lastDirection === -1)    cells[head].classList.add('head-left');
+  // Use the animated overlay for the worm instead of colouring cells.
+  updateSegments();
 }
