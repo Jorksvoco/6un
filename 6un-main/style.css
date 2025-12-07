@@ -1,19 +1,26 @@
 body {
-  background: #111;
+  /* Fallback color plus page background image from assets */
+  background-color: #111;
+  background-image: url('./assets/taust.png');
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: #e5e5e5;
   text-align: center;
   font-family: "Press Start 2P", monospace, Arial;
 }
 
 #game {
-  width: min(90vmin, 700px);
-  height: min(90vmin, 700px);
+  width: min(90vmin, 1000px);
+  height: min(90vmin, 800px);
   margin: 20px auto;
   display: grid;
   grid-template-columns: repeat(20, 1fr);
   grid-template-rows: repeat(20, 1fr);
-  background: #0c82c7;
-  border: 4px solid #33ff33;
+  /* Make the game background transparent so only the wall cells (.wall)
+     appear as grey blocks over the page background */
+  background: transparent;
   image-rendering: pixelated;
   position: relative;
 }
@@ -22,11 +29,12 @@ body {
 #hud {
   width: 420px;
   margin: 6px auto;
-  color: #33ff33;
+  color: #000000;
   font-size: 12px;
   font-family: "Press Start 2P", monospace;
   display: flex;
   justify-content: space-between;
+  position: relative; /* allow absolute positioning of HUD buttons */
 }
 
 #hudState { font-weight: 700; color: #55ff55; }
@@ -74,18 +82,25 @@ body {
 
 /* --- PIXEL WALLS --- */
 .wall {
-  background: #444;
-  border: 2px solid #222;
-  border-radius: 0;
+  /* Brown platform look */
+  background-image: linear-gradient(180deg, #6b4a2b 0%, #5a3b22 55%, #4a2f1a 100%),
+                    linear-gradient(45deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+  background-blend-mode: overlay;
+  border: 2px solid #3e2a18;
+  border-radius: 4px;
+  box-shadow: inset 0 3px 0 rgba(255,255,255,0.03), 0 6px 12px rgba(0,0,0,0.45);
 }
 
 /* --- PIXEL APPLE --- */
 .apple {
-  background-image: url('assets/apple.png');
-  background-size: cover;
+  background-image: url('./assets/apple.png');
+  /* Prevent the image from repeating/tiling and keep it centered */
+  background-repeat: no-repeat;
+  background-size: 70% auto;
   background-position: center;
   border: none;
-  border-radius: 0;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(255,80,80,0.18), 0 0 18px rgba(255,80,80,0.06) inset;
 }
 
 /* --- PIXEL EXIT --- */
@@ -106,15 +121,17 @@ body {
   position: absolute;
   width: calc(100% / 20);
   height: calc(100% / 20);
-  background: #3aff3a;
-  border: 2px solid #1b7d1b;
-  border-radius: 10%;
+  /* soft gradient for a rounded pixel look */
+  background: linear-gradient(180deg,#5df05d 0%, #32c432 60%);
+  border: 2px solid rgba(15,90,15,0.9);
+  border-radius: 18%;
   box-sizing: border-box;
-  transition: left 140ms linear, top 140ms linear, transform 140ms linear;
+  transition: left 140ms cubic-bezier(.2,.9,.2,1), top 140ms cubic-bezier(.2,.9,.2,1), transform 140ms linear;
+  filter: drop-shadow(0 6px 8px rgba(0,0,0,0.25));
 }
 
 .segment.head {
-  background: #55ff55;
+  background: linear-gradient(180deg,#9aff9a 0%, #67e567 60%);
 }
 
 .segment.head::before,
@@ -128,3 +145,127 @@ body {
 }
 .segment.head::before { left: 16%; }
 .segment.head::after  { right: 16%; }
+
+/* --- MENU / LEVEL SELECT --- */
+.menu {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.45);
+  z-index: 2000;
+}
+.menu-inner {
+  /* Make the inner panel transparent so the page background shows through */
+  background: linear-gradient(180deg, rgba(12,12,12,0.48), rgba(6,6,6,0.36));
+  padding: 18px;
+  width: min(640px, 90vw);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  color: #e5e5e5;
+}
+.menu-inner {
+  transform: translateY(0); /* placeholder for transition */
+  transition: transform 220ms cubic-bezier(.2,.9,.2,1), opacity 220ms ease;
+}
+.menu h2 { margin: 0 0 12px; font-size: 20px; }
+.level-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.level-btn {
+  padding: 10px 14px;
+  background: #0c82c7;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.level-btn:hover { filter: brightness(1.06); }
+.level-btn:active { transform: translateY(1px); }
+.level-btn.selected {
+  background: linear-gradient(180deg,#50b7ff,#0c82c7);
+  box-shadow: 0 6px 18px rgba(12,130,199,0.28), inset 0 -4px 0 rgba(0,0,0,0.08);
+  transform: translateY(-3px);
+}
+.menu.show .menu-inner { transform: translateY(-6px); opacity: 1; }
+.menu.hidden .menu-inner { transform: translateY(6px); opacity: 0; }
+.menu { opacity: 1; transition: opacity 180ms ease; }
+.menu-actions { margin-top: 12px; text-align: right; }
+.menu-actions button { padding: 8px 12px; border-radius: 8px; }
+
+/* HUD button area */
+/* position HUD buttons (note icon) far to the right of the HUD */
+#hudButtons { display:flex; align-items:center; gap:8px; position: absolute; top: 6px; right: -72px; }
+/* Circular music-note button, slightly shifted right */
+#soundToggle {
+  width: 52px;
+  height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(180deg,#fffafa,#e9f7ff);
+  color: #222;
+  font-size: 26px; /* larger glyph */
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.18);
+}
+#soundToggle:focus { outline: 2px solid rgba(0,120,200,0.25); }
+#soundToggle.off { background: linear-gradient(180deg,#4a4a4a,#222); color: #fff; box-shadow: 0 6px 14px rgba(0,0,0,0.36); }
+
+/* Hide menu by default if JS toggles it off */
+.menu.hidden { display: none; }
+
+/* Paged level grid like the screenshot */
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px 24px;
+  align-items: center;
+  justify-items: center;
+}
+.level-tile {
+  width: 110px;
+  height: 110px;
+  border-radius: 14px;
+  display: inline-grid;
+  place-items: center;
+  font-size: 30px;
+  font-weight: 800;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 12px 26px rgba(0,0,0,0.32), inset 0 -8px 18px rgba(0,0,0,0.06);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+.level-tile.green { background: linear-gradient(180deg,#28a745,#1e7e34); border: 4px solid #0c5b2e; }
+.level-tile.red { background: linear-gradient(180deg,#ff5b5b,#d64545); border: 4px solid #8b2b2b; }
+.level-tile.locked { background: linear-gradient(180deg,#6b6f80,#55586a); border: 4px solid #33354a; cursor: default; opacity: 0.95; }
+.level-tile.locked::after { content: "🔒"; font-size: 22px; display: block; margin-top: 6px; opacity: 0.95; }
+.level-tile:hover { transform: translateY(-6px); box-shadow: 0 20px 36px rgba(0,0,0,0.44); }
+
+/* Particles for apple eat */
+.particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.98;
+  transform: translate(-50%, -50%);
+  animation: particle-pop 700ms ease-out forwards;
+}
+
+@keyframes particle-pop {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  60% { transform: translate(-50%, -220%) scale(1.3); opacity: 0.9; }
+  100% { transform: translate(-50%, -420%) scale(0.6); opacity: 0; }
+}
+
+.menu-nav { display:flex; align-items:center; justify-content:space-between; margin-top:12px; }
+.arrow-btn {
+  width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,0.92); border: none;
+  box-shadow: 0 8px 0 rgba(0,0,0,0.12); cursor: pointer; font-size: 28px;
+}
+.page-indicator { font-size: 14px; color: #e5e5e5; }

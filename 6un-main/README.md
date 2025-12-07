@@ -1,22 +1,30 @@
-Apple Worm Clone — kohalik demo
+# Apple Worm
 
-Mis on uut:
-- Täiustatud mao visuaal (pea + keha mudeli stiil)
-- Gravitatsioon: madu kukub automaatselt, kui tema pea all pole klotsi
-- Juhtimine: nooleklahvid liikumiseks, G lülitab gravitatsiooni sisse, R lähtestab praeguse taseme
+Apple Worm on lihtne brauseripõhine mäng (Apple Worm / Snake stiilis), mille näidisversioon valmis kiireks prototüübiks.
 
-Kuidas käivitada
-1. Ava brauseris index.html (topeltklõps või kasuta lihtsat staatilist serverit):
+## Kirjeldus
+See projekt on lühikese ajaga tehtud mäng, kus juhtid ussikest, korjad õunu ja püüad jõuda väljapääsuni. Menüü kaudu saab valida tasemeid ja edusamm salvestatakse lokaalselt (lukustatud tasemed avanevad tasemete läbimisel).
 
-PowerShellis saad käivitada:
+## Kuidas käivitada
+Ava `index.html` oma brauseris. Parim tulemuse saamiseks: avage fail HTTP serveri kaudu (mõned brauserid piiravad heli/pildite laadimist, kui kasutate `file://`). 
 
-python -m http.server 8000; seejärel ava http://localhost:8000
+Üks lihtne viis: Kasuta VS Code Live Server laiendust või Netlify Drop & Deploy.
 
-2. Liikumiseks kasuta nooleklahve. Kui pea on tühja ala kohal, kukub madu automaatselt.
+## Kontrollerid
+- Noolnupud või WASD — liikumine
+- `R` — taaskäivita praegune tase
+- `ESC` — ava/peida menüü
+- Menüüs on klahvikombinatsioonid 1–9 kiireks tasemevalikuks (ainult avatud tasemed)
+- Helinupp HUD-is — lülitab heli sisse/välja (seadistus salvestatakse)
 
-Märkused / Järgmised ideed
-- Täiustatud segmendipõhine füüsika (kukkumine, kui mõni osa pole toetatud)
-- Lisatud спрайтиelemendid või pildipõhised mudelid
-- Lisatud hüppe- ja platvormimehaanika
+## Kuidas lähtestada salvestus
+Mäng kasutab `localStorage`i tasemete avamise ja heli seade salvestamiseks. Kui tahad oma edenemise nullida:
+1. Ava menüü ja kasuta nuppu "Reset progress" (kui see on lisatud)
+või
+2. Ava brauseri devtools → Application → Local Storage → eemalda `maxUnlockedLevel` ja `soundEnabled`
 
-Hoitke kõva, piis out!
+## Failid
+- `index.html` — põhipaigutus
+- `style.css` — stiilid ja visuaalne kujundus
+- `game.js` — mängu loogika, sisendi ja menüü käsitlemine
+- `assets/` — pildid ja helid (nt `apple.png`, `taust.png`, `applewormEat.mp3`)
